@@ -1,0 +1,43 @@
+# ******************************************************************
+# swproxy-sync managed dhcpd.conf file
+#
+# generated from swproxy-sync dhcp.conf template
+# Do NOT make changes to /etc/dhcpd.conf. Instead, make your changes
+# in /opt/swproxy-sync/templates/dhcp.template, as /etc/dhcpd.conf will be
+# overwritten.
+#
+# ******************************************************************
+
+ddns-update-style interim;
+
+allow booting;
+allow bootp;
+
+ignore client-updates;
+set vendorclass = option vendor-class-identifier;
+
+subnet <NETWORK> netmask <NETMASK> {
+     option routers             <DEFAULT GW / ROUTER>;
+
+     ## Block off HP ILO DHCP Requests
+     class "ilo" {
+             match if substring (option host-name,0,3) = "ILO";
+     }
+
+     pool {
+             option domain-name-servers <DNS SERVER>;
+             option subnet-mask         <SUBNET MASK>;
+             range dynamic-bootp        <IP RANGE START> <IP RANGE END>;
+             filename                   "/pxelinux.0";
+             default-lease-time         1800;
+             max-lease-time             1800;
+             next-server                $next_server;
+
+             #Do Not remove the below entries - Used by Autobuilder to allow servers to build
+             #ADD-SERVER
+             ## Change deny unknown-clients to allow if you want to open to all servers or specify inividual servers / mac's here
+             deny members of "ilo";
+             deny unknown-clients;
+     }
+}
+

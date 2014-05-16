@@ -1,0 +1,33 @@
+#!/bin/bash
+# vamegh <AT> gmail.com (c) 2014  gnu/gpl v2
+## very simple script to rsync tftpboot from spacewalk server to spacewalk proxy
+## and to change the default pxelinux.cfg to use proxy server ip rather than spacewalk server ip.
+
+UserCheck=`whoami`
+tftp_path="/var/lib/tftpboot"
+default_cfg="$tftp_path/pxelinux.cfg/default"
+sw_server="<HOSTNAME OF MAIN SPACEWALK SERVER>"
+sw_ip="<IP OF MAIN SPACEWALK SERVER>"
+proxy_ip="<IP OF SPACEWALK PROXY>"
+
+root_Check()
+{
+    if [ "$UserCheck" != "root" ]; then
+        echo ""
+        echo "$UserCheck, "
+        echo "please run me as root"
+        echo ""
+        exit
+    fi
+}
+
+root_Check
+
+echo "Rsyncing Across TFTP From Spacewalk Server"
+rsync -avzH $sw_server::spacewalk-tftp $tftp_path
+echo "Done.."
+echo "Pointing TFTPBoot Config to Proxy Server"
+sed -i s/$sw_ip/$proxy_ip/ $default_cfg
+echo "Done.."
+
+echo "TFTP Has Been Configured Proxy Server should be ready to accept Build Requests"

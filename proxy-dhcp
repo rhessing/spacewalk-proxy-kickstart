@@ -1,0 +1,33 @@
+#!/bin/bash
+# vamegh <AT> gmail.com (c) 2014  gnu/gpl v2
+## very simple dhcp script - just to reset dhcp config for spacewalk proxy
+
+UserCheck=`whoami`
+template="/opt/swproxy-sync/templates/dhcp.template"
+dhcp_cfg="/etc/dhcp/dhcpd.conf"
+server="<IP OF PROXY SERVER>"
+
+root_Check()
+{
+    if [ "$UserCheck" != "root" ]; then
+        echo ""
+        echo "$UserCheck, "
+        echo "please run me as root"
+        echo ""
+        exit
+    fi
+}
+
+root_Check
+
+echo "Copying across Template"
+cp $template $dhcp_cfg
+echo "Done.."
+echo "Setting next_server"
+sed -i s/\$next_server/$server/ $dhcp_cfg
+echo "Done.."
+echo "Restarting DHCP Service"
+service dhcpd restart
+echo "Done.."
+
+echo "DHCP Server Has Been Reset"
